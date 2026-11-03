@@ -284,6 +284,49 @@ fun ActionPillButton(
 
 
 
+/**
+ * 答题类页面底部操作栏里的图标按钮。
+ *
+ * 固定 48dp 方形 + tonal 底色：禁用时只降低不透明度、不改变尺寸，
+ * 因此判题前后整条操作栏的行数与布局都不会变化。
+ */
+@Composable
+fun QuizIconActionButton(
+    icon: ImageVector,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    containerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+    contentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = RoundedCornerShape(ShirohaRadius.Pill)
+    Surface(
+        modifier = modifier
+            .size(ShirohaDimens.ActionButtonMinHeight)
+            .clip(shape)
+            .alpha(if (enabled) 1f else ShirohaDimens.DisabledAlpha)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick
+            ),
+        shape = shape,
+        color = containerColor
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(20.dp),
+                tint = contentColor
+            )
+        }
+    }
+}
+
 @Composable
 fun QuizSessionExitIconButton(
     contentDescription: String,

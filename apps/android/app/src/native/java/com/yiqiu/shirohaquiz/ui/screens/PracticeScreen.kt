@@ -109,6 +109,7 @@ import com.yiqiu.shirohaquiz.ui.components.IllustrationHeroCard
 import com.yiqiu.shirohaquiz.ui.components.MultiBlankAnswerEditor
 import com.yiqiu.shirohaquiz.ui.components.MultiBlankAnswerInputs
 import com.yiqiu.shirohaquiz.ui.components.NoticeCard
+import com.yiqiu.shirohaquiz.ui.components.QuizIconActionButton
 import com.yiqiu.shirohaquiz.ui.components.QuizOptionCard
 import com.yiqiu.shirohaquiz.ui.components.QuizOptionResultStyle
 import com.yiqiu.shirohaquiz.ui.components.QuestionImagesBlock
@@ -2373,40 +2374,6 @@ private fun PracticeSetupStepCard(
 
 
 
-
-@Composable
-private fun QuizIconActionButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    contentDescription: String,
-    enabled: Boolean,
-    onClick: () -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val shape = RoundedCornerShape(ShirohaRadius.Pill)
-    Surface(
-        modifier = Modifier
-            .size(ShirohaDimens.ActionButtonMinHeight)
-            .clip(shape)
-            .alpha(if (enabled) 1f else ShirohaDimens.DisabledAlpha)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                enabled = enabled,
-                onClick = onClick
-            ),
-        shape = shape,
-        color = MaterialTheme.colorScheme.secondaryContainer
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(
-                imageVector = icon,
-                contentDescription = contentDescription,
-                modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSecondaryContainer
-            )
-        }
-    }
-}
 
 @Composable
 private fun FavoriteQuestionIconButton(

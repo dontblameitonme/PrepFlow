@@ -64,6 +64,7 @@ import com.yiqiu.shirohaquiz.importer.model.Question
 import com.yiqiu.shirohaquiz.importer.model.QuestionType
 import com.yiqiu.shirohaquiz.state.ExamSummary
 import com.yiqiu.shirohaquiz.state.QuizRepository
+import com.yiqiu.shirohaquiz.ui.components.QuizIconActionButton
 import com.yiqiu.shirohaquiz.ui.components.ActionPillButton
 import com.yiqiu.shirohaquiz.ui.components.EmptyStateIllustration
 import com.yiqiu.shirohaquiz.ui.components.GlassCard
@@ -930,53 +931,34 @@ private fun ActiveExamPanel(
         }
 
         Spacer(Modifier.height(14.dp))
+        // 单行操作栏：翻题、退出、交卷压缩到一行，高度固定，不随状态变化
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            ActionPillButton(
-                Icons.AutoMirrored.Rounded.ArrowBack,
-                "上一题",
-                primary = false,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp),
-                fillWidthContent = true,
+            QuizIconActionButton(
+                icon = Icons.AutoMirrored.Rounded.ArrowBack,
+                contentDescription = "上一题",
                 onClick = { QuizRepository.previousExamQuestion() }
             )
-            ActionPillButton(
-                Icons.AutoMirrored.Rounded.ArrowForward,
-                "下一题",
-                primary = false,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp),
-                fillWidthContent = true,
+            QuizIconActionButton(
+                icon = Icons.AutoMirrored.Rounded.ArrowForward,
+                contentDescription = "下一题",
                 onClick = { QuizRepository.nextExamQuestion() }
             )
-        }
-        Spacer(Modifier.height(10.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            ActionPillButton(
-                Icons.AutoMirrored.Rounded.ExitToApp,
-                "结束本场",
-                primary = false,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp),
-                fillWidthContent = true,
+            QuizIconActionButton(
+                icon = Icons.AutoMirrored.Rounded.ExitToApp,
+                contentDescription = "结束本场",
                 onClick = { showExitConfirm = true }
             )
             ActionPillButton(
-                Icons.Rounded.CheckCircle,
-                "立即交卷",
+                icon = Icons.Rounded.CheckCircle,
+                text = "立即交卷",
                 primary = true,
                 modifier = Modifier
                     .weight(1f)
-                    .height(50.dp),
+                    .height(48.dp),
                 fillWidthContent = true,
                 onClick = {
                     if (unansweredCount > 0) {
