@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -65,10 +66,12 @@ class MainActivity : ComponentActivity() {
         applyStatusBarTheme(QuizRepository.darkThemeEnabled)
         setContent {
             val darkTheme = QuizRepository.darkThemeEnabled
-            SideEffect {
-                applyStatusBarTheme(darkTheme)
-            }
             ShirohaQuizTheme(darkTheme = darkTheme) {
+                // 状态栏跟随当前主题底色（含 Monet 动态取色）
+                val surface = MaterialTheme.colorScheme.surface
+                SideEffect {
+                    applyStatusBarTheme(surface, darkTheme)
+                }
                 ShirohaStartupGate {
                     ShirohaAppShell()
                 }
@@ -76,12 +79,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun applyStatusBarTheme(darkTheme: Boolean) {
-        window.statusBarColor = if (darkTheme) {
-            Color(0xFF0E1627).toArgb()
-        } else {
-            Color(0xFFF7F9FF).toArgb()
-        }
+    private fun applyStatusBarTheme(surface: Color, darkTheme: Boolean) {
+        window.statusBarColor = surface.toArgb()
         WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = !darkTheme
     }
 }

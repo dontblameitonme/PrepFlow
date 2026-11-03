@@ -2,6 +2,7 @@ package com.yiqiu.shirohaquiz.ui.screens
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -525,6 +526,17 @@ fun AppearancePreferenceScreen(
             ThemeChoiceRow(
                 darkThemeEnabled = QuizRepository.darkThemeEnabled,
                 onThemeChange = { enabled -> QuizRepository.setDarkThemeEnabled(context, enabled) }
+            )
+            Spacer(Modifier.height(12.dp))
+            PreferenceSwitchRow(
+                title = "动态取色（Monet）",
+                desc = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    "跟随壁纸生成整套 Material You 配色。关闭后使用品牌蓝。"
+                } else {
+                    "当前系统低于 Android 12，将使用由品牌色推导的 Material 3 配色。"
+                },
+                checked = QuizRepository.dynamicColorEnabled,
+                onCheckedChange = { enabled -> QuizRepository.setDynamicColorEnabled(context, enabled) }
             )
             Spacer(Modifier.height(12.dp))
             PreferenceSwitchRow(

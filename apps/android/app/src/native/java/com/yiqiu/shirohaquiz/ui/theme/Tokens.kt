@@ -1,94 +1,105 @@
 package com.yiqiu.shirohaquiz.ui.theme
 
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+/**
+ * 兼容层：既有界面全部通过 ShirohaColors 取色。
+ *
+ * 这里把每个令牌映射到当前 Material 3 角色色（含 Monet 动态取色），
+ * 因此只要 [ShirohaQuizTheme] 换配色，全 App 的底色/卡片/文字/描边
+ * 会一起切换，无需逐屏改造。
+ *
+ * scheme 用 Snapshot 状态持有：读取令牌即可触发重组。
+ */
 object ShirohaColors {
     var isDarkMode: Boolean = false
+        private set
 
-    val BgApp: Color
-        get() = if (isDarkMode) Color(0xFF0E1627) else Color(0xFFF4F6FB)
-    val BgElevated: Color
-        get() = if (isDarkMode) Color(0xFF13203A) else Color(0xFFFBFCFE)
-    val BgDeepFocus = Color(0xFF0E1627)
+    private var schemeState by mutableStateOf<ColorScheme>(fallbackScheme(false))
 
-    val BgGradientTop: Color
-        get() = if (isDarkMode) Color(0xFF0E1627) else Color(0xFFF7F9FF)
-    val BgGradientMiddle: Color
-        get() = if (isDarkMode) Color(0xFF101B31) else Color(0xFFF1F4FB)
-    val BgGradientBottom: Color
-        get() = if (isDarkMode) Color(0xFF15213A) else Color(0xFFF6F7FB)
+    private val scheme: ColorScheme
+        get() = schemeState
 
-    val CardGlass: Color
-        get() = if (isDarkMode) Color(0xD91A2742) else Color(0xC7FFFFFF)
-    val CardSoft: Color
-        get() = if (isDarkMode) Color(0xE617233D) else Color(0xE6FFFFFF)
-    val CardMuted: Color
-        get() = if (isDarkMode) Color(0xFF1B2844) else Color(0xFFF7F9FD)
-    val CardWhite84: Color
-        get() = if (isDarkMode) Color(0xD61A2742) else Color.White.copy(alpha = 0.84f)
-    val CardWhite86: Color
-        get() = if (isDarkMode) Color(0xDB1B2945) else Color.White.copy(alpha = 0.86f)
-    val CardWhite78: Color
-        get() = if (isDarkMode) Color(0xC71A2742) else Color.White.copy(alpha = 0.78f)
-    val CardWhite72: Color
-        get() = if (isDarkMode) Color(0xB817233D) else Color.White.copy(alpha = 0.72f)
-    val CardWhite68: Color
-        get() = if (isDarkMode) Color(0xAD17233D) else Color.White.copy(alpha = 0.68f)
-    val CardWhite62: Color
-        get() = if (isDarkMode) Color(0x9E17233D) else Color.White.copy(alpha = 0.62f)
-    val BottomBar: Color
-        get() = if (isDarkMode) Color(0xF0121D33) else Color.White.copy(alpha = 0.82f)
+    private fun fallbackScheme(dark: Boolean): ColorScheme =
+        if (dark) darkColorScheme() else androidx.compose.material3.lightColorScheme()
 
-    val LineSoft: Color
-        get() = if (isDarkMode) Color(0x40B7C8E8) else Color(0x38A0AEC0)
-    val LineStrong: Color
-        get() = if (isDarkMode) Color(0xFF334462) else Color(0xFFD8E0EF)
-    val LineSelected: Color
-        get() = if (isDarkMode) Color(0xFF91AFFF) else Color(0xFF85A7FF)
+    internal fun bind(scheme: ColorScheme, dark: Boolean) {
+        isDarkMode = dark
+        if (schemeState !== scheme) schemeState = scheme
+    }
 
-    val TextPrimary: Color
-        get() = if (isDarkMode) Color(0xFFF8FAFC) else Color(0xFF101828)
-    val TextSecondary: Color
-        get() = if (isDarkMode) Color(0xFFB8C2D6) else Color(0xFF667085)
+    // ---------- 底与容器 ----------
+    val BgApp: Color get() = scheme.surface
+    val BgElevated: Color get() = scheme.surfaceContainerLow
+
+    /** 专注/沉浸态底色：比普通底色更深一档。 */
+    val BgDeepFocus: Color
+        get() = if (isDarkMode) scheme.surfaceContainerLowest else scheme.surfaceContainer
+
+    val BgGradientTop: Color get() = scheme.surface
+    val BgGradientMiddle: Color get() = scheme.surface
+    val BgGradientBottom: Color get() = scheme.surface
+
+    val CardGlass: Color get() = scheme.surfaceContainer
+    val CardSoft: Color get() = scheme.surfaceContainerLow
+    val CardMuted: Color get() = scheme.surfaceContainerHigh
+
+    val CardWhite84: Color get() = scheme.surfaceContainerLow
+    val CardWhite86: Color get() = scheme.surfaceContainerLow
+    val CardWhite78: Color get() = scheme.surfaceContainer
+    val CardWhite72: Color get() = scheme.surfaceContainer
+    val CardWhite68: Color get() = scheme.surfaceContainerHigh
+    val CardWhite62: Color get() = scheme.surfaceContainerHigh
+
+    val BottomBar: Color get() = scheme.surfaceContainer
+
+    // ---------- 分隔与描边 ----------
+    val LineSoft: Color get() = scheme.outlineVariant
+    val LineStrong: Color get() = scheme.outline
+    val LineSelected: Color get() = scheme.primary
+
+    // ---------- 文字 ----------
+    val TextPrimary: Color get() = scheme.onSurface
+    val TextSecondary: Color get() = scheme.onSurfaceVariant
     val TextTertiary: Color
-        get() = if (isDarkMode) Color(0xFF8794AA) else Color(0xFF94A3B8)
-    val TextOnBrand: Color
-        get() = if (isDarkMode) Color(0xFF0F172A) else Color.White
+        get() = scheme.onSurfaceVariant.copy(alpha = 0.72f)
+    val TextOnBrand: Color get() = scheme.onPrimary
     val TextWarning: Color
-        get() = if (isDarkMode) Color(0xFFF9C46B) else Color(0xFF9A6700)
+        get() = if (isDarkMode) Color(0xFFF7C978) else Color(0xFF7A4F00)
     val IconWarning: Color
-        get() = if (isDarkMode) Color(0xFFF4B348) else Color(0xFFE29A00)
+        get() = if (isDarkMode) Color(0xFFF4B348) else Color(0xFF9A6700)
 
-    val BrandPrimary: Color
-        get() = if (isDarkMode) Color(0xFF89A7FF) else Color(0xFF4F7CFF)
-    val BrandPrimarySoft: Color
-        get() = if (isDarkMode) Color(0xFF243A63) else Color(0xFFEAF0FF)
-    val BrandSecondary: Color
-        get() = if (isDarkMode) Color(0xFFB7C8FF) else Color(0xFF6C8EEA)
+    // ---------- 品牌 ----------
+    val BrandPrimary: Color get() = scheme.primary
+    val BrandPrimarySoft: Color get() = scheme.primaryContainer
+    val BrandSecondary: Color get() = scheme.secondary
 
-    val OptionLabelIdle: Color
-        get() = if (isDarkMode) Color(0xFF25324F) else Color(0xFFF3F5FA)
+    val OptionLabelIdle: Color get() = scheme.surfaceContainerHighest
 
+    // ---------- 语义色（M3 未内置 success，保留稳定语义） ----------
     val StateSuccess: Color
-        get() = if (isDarkMode) Color(0xFF5FE3A2) else Color(0xFF17B26A)
+        get() = if (isDarkMode) Color(0xFF6FE0A8) else Color(0xFF116B45)
     val StateSuccessSoft: Color
-        get() = if (isDarkMode) Color(0xFF123A2A) else Color(0xFFDDF7EA)
+        get() = if (isDarkMode) Color(0xFF17362A) else Color(0xFFDCF5E8)
     val StateWarning: Color
-        get() = if (isDarkMode) Color(0xFFF9B955) else Color(0xFFF79009)
+        get() = if (isDarkMode) Color(0xFFF9B955) else Color(0xFF8A5A00)
     val StateWarningSoft: Color
-        get() = if (isDarkMode) Color(0xFF3B2B12) else Color(0xFFFFF7E8)
-    val StateDanger: Color
-        get() = if (isDarkMode) Color(0xFFFF8A80) else Color(0xFFF04438)
-    val StateDangerSoft: Color
-        get() = if (isDarkMode) Color(0xFF3B1E24) else Color(0xFFFEECEC)
+        get() = if (isDarkMode) Color(0xFF3A2C13) else Color(0xFFFFF3DC)
+    val StateDanger: Color get() = scheme.error
+    val StateDangerSoft: Color get() = scheme.errorContainer
 }
 
 object ShirohaRadius {
-    val Sm = 14.dp
-    val Md = 18.dp
-    val Lg = 24.dp
-    val Xl = 30.dp
+    val Sm = 12.dp
+    val Md = 16.dp
+    val Lg = 22.dp
+    val Xl = 26.dp
     val Pill = 999.dp
 }
 
@@ -118,30 +129,36 @@ object ShirohaDimens {
     val StepPillHorizontalPadding = 10.dp
     val StepPillVerticalPadding = 5.dp
 
-    val StatusChipMinHeight = 32.dp
-    val StatusChipHorizontalPadding = 12.dp
-    val StatusChipVerticalPadding = 7.dp
+    val StatusChipMinHeight = 30.dp
+    val StatusChipHorizontalPadding = 11.dp
+    val StatusChipVerticalPadding = 6.dp
 
-    val ActionButtonMinHeight = 44.dp
-    val ActionButtonIconSize = 17.dp
-    val ActionButtonHorizontalPadding = 14.dp
+    /** M3 按钮标准高度：48dp 满足最小点击区域。 */
+    val ActionButtonMinHeight = 48.dp
+    val ActionButtonIconSize = 18.dp
+    val ActionButtonHorizontalPadding = 16.dp
     val ActionButtonEqualHorizontalPadding = 10.dp
-    val ActionButtonIconTextGap = 7.dp
+    val ActionButtonIconTextGap = 8.dp
     val ActionButtonEqualIconTextGap = 6.dp
-    val DisabledAlpha = 0.52f
+    val DisabledAlpha = 0.38f
+
+    /** 答题页底部操作栏：固定高度，保证判题前后不重排。 */
+    val QuizActionBarHeight = 76.dp
+    val QuizActionBarHorizontalPadding = 12.dp
 
     val OptionCardHorizontalPadding = 14.dp
-    val OptionCardVerticalPadding = 14.dp
-    val OptionLabelSize = 36.dp
+    val OptionCardVerticalPadding = 12.dp
+    val OptionLabelSize = 30.dp
     val OptionLabelTextGap = 12.dp
+    val OptionRowMinHeight = 58.dp
 
-    val BottomBarHorizontalPadding = 12.dp
+    val BottomBarHorizontalPadding = 8.dp
     val BottomBarVerticalPadding = 4.dp
-    val BottomNavItemGap = 6.dp
+    val BottomNavItemGap = 4.dp
     val BottomNavItemHeight = 56.dp
     val BottomNavItemHorizontalPadding = 4.dp
-    val BottomNavIconSize = 21.dp
-    val BottomNavIconSelectedScale = 1.05f
+    val BottomNavIconSize = 22.dp
+    val BottomNavIconSelectedScale = 1.02f
 
     val EmptyStateImageSize = 140.dp
     val LoadingImageSize = 112.dp

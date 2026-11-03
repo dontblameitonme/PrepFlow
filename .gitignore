@@ -109,3 +109,6 @@ test/native-parser-regression/CLAUDE.md
 
 # Web AI regression runtime reports
 test/web-ai-practice/reports/
+
+# CI 现场生成的临时签名文件
+apps/android/signing.jks

@@ -225,6 +225,7 @@ object QuizRepository {
     private const val KEY_EXAM_PREFERRED_TYPE_SCORES = "exam_preferred_type_scores"
     private const val KEY_STARTUP_SPLASH_ENABLED = "startup_splash_enabled"
     private const val KEY_DARK_THEME_ENABLED = "dark_theme_enabled"
+    private const val KEY_DYNAMIC_COLOR_ENABLED = "dynamic_color_enabled"
     private const val KEY_CARD_ANIMATION_ENABLED = "card_animation_enabled"
     private const val KEY_SHIROHA_MODE_ENABLED = "shiroha_mode_enabled"
     private const val KEY_TABLET_SIDE_NAVIGATION_ENABLED = "tablet_side_navigation_enabled"
@@ -353,6 +354,8 @@ object QuizRepository {
     var startupSplashEnabled by mutableStateOf(true)
         private set
     var darkThemeEnabled by mutableStateOf(false)
+        private set
+    var dynamicColorEnabled by mutableStateOf(true)
         private set
     var cardAnimationEnabled by mutableStateOf(true)
         private set
@@ -598,6 +601,7 @@ object QuizRepository {
         preferredExamTypeScoresText = prefs.getString(KEY_EXAM_PREFERRED_TYPE_SCORES, "") ?: ""
         startupSplashEnabled = prefs.getBoolean(KEY_STARTUP_SPLASH_ENABLED, true)
         darkThemeEnabled = prefs.getBoolean(KEY_DARK_THEME_ENABLED, false)
+        dynamicColorEnabled = prefs.getBoolean(KEY_DYNAMIC_COLOR_ENABLED, true)
         cardAnimationEnabled = prefs.getBoolean(KEY_CARD_ANIMATION_ENABLED, true)
         shirohaModeEnabled = prefs.getBoolean(KEY_SHIROHA_MODE_ENABLED, false)
         tabletSideNavigationEnabled = prefs.getBoolean(KEY_TABLET_SIDE_NAVIGATION_ENABLED, false)
@@ -1946,6 +1950,12 @@ object QuizRepository {
     fun setDarkThemeEnabled(context: Context, enabled: Boolean) {
         appContext = context.applicationContext
         darkThemeEnabled = enabled
+        persist()
+    }
+
+    fun setDynamicColorEnabled(context: Context, enabled: Boolean) {
+        appContext = context.applicationContext
+        dynamicColorEnabled = enabled
         persist()
     }
 
@@ -5466,6 +5476,7 @@ object QuizRepository {
             .putString(KEY_EXAM_PREFERRED_TYPE_SCORES, preferredExamTypeScoresText)
             .putBoolean(KEY_STARTUP_SPLASH_ENABLED, startupSplashEnabled)
             .putBoolean(KEY_DARK_THEME_ENABLED, darkThemeEnabled)
+            .putBoolean(KEY_DYNAMIC_COLOR_ENABLED, dynamicColorEnabled)
             .putBoolean(KEY_CARD_ANIMATION_ENABLED, cardAnimationEnabled)
             .putBoolean(KEY_SHIROHA_MODE_ENABLED, shirohaModeEnabled)
             .putBoolean(KEY_TABLET_SIDE_NAVIGATION_ENABLED, tabletSideNavigationEnabled)

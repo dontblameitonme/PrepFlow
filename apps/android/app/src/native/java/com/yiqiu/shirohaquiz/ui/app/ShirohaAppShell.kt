@@ -36,6 +36,8 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
@@ -267,30 +269,32 @@ fun ShirohaAppShell() {
                         WebDavTaskCapsule(visible = currentTab != MainTab.CloudBackup,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                             onOpen = { navigateTo(MainTab.CloudBackup) })
-                        BottomAppBar(
-                            containerColor = ShirohaColors.BottomBar,
+                        NavigationBar(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
                             tonalElevation = 0.dp
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        horizontal = ShirohaDimens.BottomBarHorizontalPadding,
-                                        vertical = ShirohaDimens.BottomBarVerticalPadding
-                                    ),
-                                horizontalArrangement = Arrangement.spacedBy(ShirohaDimens.BottomNavItemGap),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                MainTab.entries.filter { it.showInBottomBar }.forEach { tab ->
-                                    ShirohaBottomNavItem(
-                                        tab = tab,
-                                        selected = selectedRootTab == tab,
-                                        modifier = Modifier.weight(1f),
-                                        onClick = {
-                                            if (currentTab != tab) navigateRoot(tab)
-                                        }
-                                    )
-                                }
+                            MainTab.entries.filter { it.showInBottomBar }.forEach { tab ->
+                                NavigationBarItem(
+                                    selected = selectedRootTab == tab,
+                                    onClick = { if (currentTab != tab) navigateRoot(tab) },
+                                    icon = {
+                                        Icon(
+                                            imageVector = tab.icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(ShirohaDimens.BottomNavIconSize)
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            text = tab.title,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            fontWeight = if (selectedRootTab == tab) FontWeight.SemiBold else FontWeight.Medium,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    },
+                                    alwaysShowLabel = true
+                                )
                             }
                         }
                     }
@@ -320,15 +324,7 @@ fun ShirohaAppShell() {
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    ShirohaColors.BgGradientTop,
-                                    ShirohaColors.BgGradientMiddle,
-                                    ShirohaColors.BgGradientBottom
-                                )
-                            )
-                        )
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
                     AnimatedContent(
                     targetState = currentTab,

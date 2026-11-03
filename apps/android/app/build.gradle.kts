@@ -28,8 +28,12 @@ android {
             dimension = "variant"
             testInstrumentationRunner = "com.yiqiu.shirohaquiz.state.QuizRepositoryCloudRestoreSafetyInstrumentation"
             applicationId = "com.reqir.shirohaquiz"
-            versionCode = 214
-            versionName = "0.9.14"
+            versionCode = 215
+            versionName = "0.10.0"
+            ndk {
+                // Compose 全为托管代码，无 .so；显式声明目标 ABI，产物标注 arm64-v8a。
+                abiFilters += "arm64-v8a"
+            }
         }
     }
 

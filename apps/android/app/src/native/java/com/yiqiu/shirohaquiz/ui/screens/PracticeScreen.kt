@@ -50,6 +50,7 @@ import androidx.compose.material.icons.automirrored.rounded.TextSnippet
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -1263,59 +1264,93 @@ fun PracticeScreen(
                 }
             }
 
-            Spacer(Modifier.height(10.dp))
-            if (!isReciteMode && isBatchBeforeSubmit) {
-                ActionPillButton(
-                    Icons.Rounded.CheckCircle,
-                    if (batchMissingAnswerAiRunning) "正在获取 AI 参考" else "提交本组",
-                    primary = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    fillWidthContent = true,
-                    enabled = !batchMissingAnswerAiRunning,
-                    onClick = {
+            Spacer(Modifier.height(12.dp))
+            // ── 单行操作栏 ──
+            // 判题前：[解析][←][提交答案]，判题后只是主按钮换文案与图标，
+            // 行数与每个控件宽度都不变，因此整个操作区不会上下跳动。
+            val missingAiLoading = currentMissingAnswerAiState.status == MissingAnswerAiReferenceStatus.LOADING
+            val atLastQuestion = QuizRepository.practiceIndex >= practiceQuestions.lastIndex
+            val mainActionLabel = when {
+                isBatchBeforeSubmit -> if (batchMissingAnswerAiRunning) "正在获取 AI 参考" else "提交本组"
+                !isReciteMode && !isSubmitted -> "提交答案"
+                isResolvingUnsubmitted && nextUnsubmittedIndex != null -> "下一道未提交（$unsubmittedCount）"
+                isResolvingUnsubmitted -> "当前题未提交"
+                shouldOfferUnsubmittedCompletion -> "补答未提交（$unsubmittedCount）"
+                isBatchSubmitted && canStartNextBatchGroup -> "进入下一组"
+                isBatchSubmitted -> "完成练习"
+                atLastQuestion -> "完成练习"
+                else -> "下一题"
+            }
+            val mainActionIcon = when (mainActionLabel) {
+                "提交答案", "提交本组" -> Icons.Rounded.CheckCircle
+                "完成练习" -> Icons.Rounded.Done
+                else -> Icons.AutoMirrored.Rounded.ArrowForward
+            }
+            val mainActionEnabled = when {
+                isBatchBeforeSubmit -> !batchMissingAnswerAiRunning
+                isResolvingUnsubmitted -> nextUnsubmittedIndex != null
+                shouldOfferUnsubmittedCompletion -> firstUnsubmittedIndex != null
+                !isReciteMode && !isSubmitted -> !missingAiLoading
+                else -> true
+            }
+            val mainAction: () -> Unit = {
+                when {
+                    isBatchBeforeSubmit -> {
                         if (batchDraftAnsweredCount < batchGroupTotal) {
                             showBatchSubmitConfirm = true
                         } else {
                             submitPracticeBatchWithMissingAnswerAi()
                         }
                     }
+
+                    !isReciteMode && !isSubmitted -> submitCurrentPracticeQuestion()
+                    isResolvingUnsubmitted -> goToNextUnsubmittedQuestion()
+                    shouldOfferUnsubmittedCompletion -> startUnsubmittedReview()
+                    isBatchSubmitted && canStartNextBatchGroup -> {
+                        QuizRepository.startNextPracticeBatchGroup()
+                        batchReviewWrongOnly = false
+                        isPracticeProgressExpanded = true
+                    }
+
+                    isBatchSubmitted -> QuizRepository.completePracticeSession()
+                    atLastQuestion -> QuizRepository.completePracticeSession()
+                    else -> goNextPractice()
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                QuizIconActionButton(
+                    icon = Icons.AutoMirrored.Rounded.TextSnippet,
+                    contentDescription = "查看解析",
+                    enabled = isSubmitted && !missingAiLoading,
+                    onClick = { if (!isSubmitted) submitCurrentPracticeQuestion() }
                 )
-            } else if (!isReciteMode) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    ActionPillButton(
-                        Icons.AutoMirrored.Rounded.TextSnippet,
-                        "查看解析",
-                        primary = false,
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        fillWidthContent = true,
-                        enabled = currentMissingAnswerAiState.status != MissingAnswerAiReferenceStatus.LOADING,
-                        onClick = {
-                            if (!isSubmitted) {
-                                submitCurrentPracticeQuestion()
-                            }
-                        }
-                    )
-                    ActionPillButton(
-                        Icons.Rounded.CheckCircle,
-                        if (isSubmitted) "已提交" else "提交答案",
-                        primary = !isSubmitted,
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        fillWidthContent = true,
-                        enabled = !isSubmitted && currentMissingAnswerAiState.status != MissingAnswerAiReferenceStatus.LOADING,
-                        onClick = {
-                            if (!isSubmitted) {
-                                submitCurrentPracticeQuestion()
-                            }
-                        }
+                QuizIconActionButton(
+                    icon = Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = "上一题",
+                    enabled = canGoPreviousPractice,
+                    onClick = { goPreviousPractice() }
+                )
+                ActionPillButton(
+                    icon = mainActionIcon,
+                    text = mainActionLabel,
+                    primary = true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(ShirohaDimens.ActionButtonMinHeight),
+                    fillWidthContent = true,
+                    enabled = mainActionEnabled,
+                    onClick = mainAction
+                )
+                if (shouldOfferUnsubmittedCompletion || isResolvingUnsubmitted) {
+                    QuizIconActionButton(
+                        icon = Icons.Rounded.Done,
+                        contentDescription = "完成练习",
+                        enabled = true,
+                        onClick = { showUnsubmittedCompleteConfirm = true }
                     )
                 }
             }
@@ -1327,86 +1362,6 @@ fun PracticeScreen(
                     )
                 )
             }
-            Spacer(Modifier.height(10.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                ActionPillButton(
-                    Icons.AutoMirrored.Rounded.ArrowBack,
-                    "上一题",
-                    primary = false,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp),
-                    fillWidthContent = true,
-                    enabled = canGoPreviousPractice,
-                    onClick = { goPreviousPractice() }
-                )
-                ActionPillButton(
-                    Icons.AutoMirrored.Rounded.ArrowForward,
-                    when {
-                        isResolvingUnsubmitted && nextUnsubmittedIndex != null -> "下一道未提交（$unsubmittedCount）"
-                        isResolvingUnsubmitted -> "当前题未提交"
-                        shouldOfferUnsubmittedCompletion -> "补答未提交（$unsubmittedCount）"
-                        else -> "下一题"
-                    },
-                    primary = false,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(50.dp),
-                    fillWidthContent = true,
-                    enabled = when {
-                        isResolvingUnsubmitted -> nextUnsubmittedIndex != null
-                        shouldOfferUnsubmittedCompletion -> firstUnsubmittedIndex != null
-                        else -> canGoNextPractice
-                    },
-                    onClick = {
-                        when {
-                            isResolvingUnsubmitted -> goToNextUnsubmittedQuestion()
-                            shouldOfferUnsubmittedCompletion -> startUnsubmittedReview()
-                            else -> goNextPractice()
-                        }
-                    }
-                )
-            }
-
-            if (shouldOfferUnsubmittedCompletion || isResolvingUnsubmitted) {
-                Spacer(Modifier.height(10.dp))
-                ActionPillButton(
-                    Icons.Rounded.CheckCircle,
-                    "完成练习",
-                    primary = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    fillWidthContent = true,
-                    onClick = { showUnsubmittedCompleteConfirm = true }
-                )
-            }
-
-            if (isBatchSubmitted) {
-                Spacer(Modifier.height(10.dp))
-                ActionPillButton(
-                    Icons.Rounded.PlayArrow,
-                    if (canStartNextBatchGroup) "进入下一组" else "完成练习",
-                    primary = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    fillWidthContent = true,
-                    onClick = {
-                        if (canStartNextBatchGroup) {
-                            QuizRepository.startNextPracticeBatchGroup()
-                            batchReviewWrongOnly = false
-                            isPracticeProgressExpanded = true
-                        } else {
-                            QuizRepository.completePracticeSession()
-                        }
-                    }
-                )
-            }
-
 
             if (showUnsubmittedCompleteConfirm) {
                 UnsubmittedPracticeConfirmDialog(
@@ -2418,6 +2373,40 @@ private fun PracticeSetupStepCard(
 
 
 
+
+@Composable
+private fun QuizIconActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    contentDescription: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val shape = RoundedCornerShape(ShirohaRadius.Pill)
+    Surface(
+        modifier = Modifier
+            .size(ShirohaDimens.ActionButtonMinHeight)
+            .clip(shape)
+            .alpha(if (enabled) 1f else ShirohaDimens.DisabledAlpha)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick
+            ),
+        shape = shape,
+        color = MaterialTheme.colorScheme.secondaryContainer
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
+}
 
 @Composable
 private fun FavoriteQuestionIconButton(
