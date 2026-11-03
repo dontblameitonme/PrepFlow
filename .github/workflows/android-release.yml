@@ -1,10 +1,10 @@
-name: Android Release (arm64-v8a)
+name: Android Release arm64-v8a
 
 on:
   workflow_dispatch:
     inputs:
       release_notes:
-        description: "Release 说明（留空用默认文案）"
+        description: "追加的 Release 说明（可留空）"
         required: false
         default: ""
 
@@ -32,10 +32,7 @@ jobs:
       - name: Prepare signing config
         working-directory: apps/android
         run: |
-          keytool -genkeypair -v -keystore signing.jks -alias shiroha \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass shiroha2026 -keypass shiroha2026 \
-            -dname "CN=Shiroha Quiz, OU=PrepFlow, O=PrepFlow, L=NA, ST=NA, C=CN"
+          keytool -genkeypair -v -keystore signing.jks -alias shiroha -keyalg RSA -keysize 2048 -validity 10000 -storepass shiroha2026 -keypass shiroha2026 -dname "CN=Shiroha Quiz, OU=PrepFlow, O=PrepFlow, L=NA, ST=NA, C=CN"
           printf 'storeFile=signing.jks\nstorePassword=shiroha2026\nkeyAlias=shiroha\nkeyPassword=shiroha2026\n' > keystore.properties
 
       - name: Build native release APK
@@ -73,18 +70,11 @@ jobs:
           EXTRA_NOTES: ${{ inputs.release_notes }}
         run: |
           TAG="v${VERSION}-m3"
-          NOTES="## Material You 重构版
-
-- 全新 Material Design 3 视觉：动态取色（Monet）、色调容器、M3 形状与组件
-- 答题页底部操作栏改为单行常驻，判题前后不再重排、不再上下跳动
-- 选项行改为紧凑的 M3 描边列表，正确/错误直接换色并带状态图标
-- 术语与配色统一走 M3 角色色，深浅色主题同步跟随壁纸
-
-安装说明：本包使用 CI 生成的签名密钥，与旧版本签名不同，覆盖安装前请先卸载旧版。
-
-${EXTRA_NOTES}"
+          if [ -n "$EXTRA_NOTES" ]; then
+            printf '\n%s\n' "$EXTRA_NOTES" >> .github/release-notes-m3.md
+          fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK" "$APK.sha256" --clobber
           else
-            gh release create "$TAG" "$APK" "$APK.sha256" --title "Shiroha Quiz ${VERSION} · Material You" --notes "$NOTES"
+            gh release create "$TAG" "$APK" "$APK.sha256" --title "Shiroha Quiz ${VERSION} · Material You" --notes-file .github/release-notes-m3.md
           fi
