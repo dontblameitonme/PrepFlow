@@ -75,6 +75,7 @@ jobs:
           fi
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" "$APK" "$APK.sha256" --clobber
+            gh release edit "$TAG" --notes-file .github/release-notes-m3.md --title "Shiroha Quiz ${VERSION} · Material You"
           else
             gh release create "$TAG" "$APK" "$APK.sha256" --title "Shiroha Quiz ${VERSION} · Material You" --notes-file .github/release-notes-m3.md
           fi
