@@ -202,10 +202,10 @@ internal class ShirohaTonalPalette private constructor(
 ) {
     private val cache = HashMap<Int, Color>()
 
-    fun tone(tone: Double): Color {
-        val key = (tone * 10).roundToInt()
+    fun tone(tone: Int): Color {
+        val key = tone * 10
         cache[key]?.let { return it }
-        val color = OklchMath.tone(hue, chroma, tone)
+        val color = OklchMath.tone(hue, chroma, tone.toDouble())
         cache[key] = color
         return color
     }

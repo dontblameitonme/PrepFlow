@@ -63,7 +63,6 @@ class MainActivity : ComponentActivity() {
         DocumentRecognitionManager.init(applicationContext)
         com.yiqiu.shirohaquiz.sync.webdav.WebDavAutoBackup.schedule(applicationContext)
         LauncherIconSwitcher.applyShirohaMode(applicationContext, QuizRepository.shirohaModeEnabled)
-        applyStatusBarTheme(QuizRepository.darkThemeEnabled)
         setContent {
             val darkTheme = QuizRepository.darkThemeEnabled
             ShirohaQuizTheme(darkTheme = darkTheme) {
